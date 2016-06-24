@@ -3,6 +3,7 @@
 This module will help you display anything which you scheduled day by day. 
 
 Example:
+nw-week.api.php
 <?php
 /**
  * hook_week_data
