@@ -19,7 +19,7 @@ function nw_week_setting_form() {
     '#title' => t('Hook module'),
     '#description' => t('Allow specific module to hook'),
     '#required' => TRUE,
-    '#default_value' => variable_get('module_hook', 'nw_week_test'),
+    '#default_value' => variable_get('nw_week_module_hook', 'nw_week_test'),
   );
 
   return system_settings_form($form);
