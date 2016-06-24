@@ -1,0 +1,27 @@
+<?php
+
+function nw_week_test_week_data() {
+  $objec_1 = new stdClass();
+  $objec_1->date = 1466640000; //23/6/2016 -> week1
+  $objec_1->name = 'Truong Tam Phong';
+
+  $objec_3 = new stdClass();
+  $objec_3->date = 1466640000; //23/6/2016 -> week1
+  $objec_3->name = 'Ton Ngo Khong';
+
+  $objec_2 = new stdClass();
+  $objec_2->date = 1467072000; //28/6/2016 -> week2
+  $objec_2->name = 'Ly Lien Kiet';
+
+  $objec_4 = new stdClass();
+  $objec_4->date = 1470787200;
+  $objec_4->name = 'Thuan Vo';
+
+  $objec_5 = new stdClass();
+  $objec_5->date = 1468108800;
+  $objec_5->name = 'Thuan Vo VAN';
+
+  $data = array($objec_2, $objec_1, $objec_3, $objec_4, $objec_5);
+
+  return $data;
+}

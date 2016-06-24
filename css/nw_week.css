@@ -1,0 +1,18 @@
+.nw-week-loading {
+    display: block;
+    position: absolute;
+    padding: 50px;
+    padding-left: 430px;
+}
+
+.nw-week-paging .nw-week-previous {
+    float: left;
+}
+
+.nw-week-paging .nw-week-next {
+    float: right;
+}
+
+.nw-week-header-table {
+    font-weight: bold;
+}

@@ -1,0 +1,171 @@
+<?php
+define('NW_WEEK_DATA_CACHE', 'nw_week_data_cache');
+/**
+ * Implement hook_menu
+ * @return mixed
+ */
+function nw_week_menu() {
+  $items['nw-week/page/%'] = array(
+    'title' => t('Aplication configuration'),
+    'page callback' => 'nw_week_next_get',
+    'page arguments' => array(2),
+    'access arguments' => array('administer nw_week module'),
+    'file' => 'includes/nw_week.callback.inc',
+  );
+
+  $items['admin/config/nw-week'] = array(
+    'title' => t('Nextway week'),
+    'position' => 'right',
+    'weight' => 0,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer site configuration'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+
+  $items['admin/config/nw-week/settings'] = array(
+    'title' => t('Nextway week configuration'),
+    'description' => t('Week configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nw_week_setting_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'includes/nw_week.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implement hook_permission
+ * @return array
+ */
+function nw_week_permission() {
+  return array(
+    'administer nw_week module' => array(
+      'title' => t('Administer nw_week module'),
+      'description' => t('Perform administration tasks for nw_week module.'),
+    ),
+  );
+}
+
+/**
+ * Implement hook_theme()
+ */
+function nw_week_theme() {
+  return array(
+    'nw_week' => array(
+      'template' => 'templates/nw-week',
+      'arguments' => array('data' => NULL),
+    ),
+    'nw_week_general' => array(
+      'template' => 'templates/nw-week-general',
+      'arguments' => array('data' => NULL),
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function nw_week_block_info() {
+  $blocks = array();
+
+  $blocks['nw_week_block'] = array(
+    'info' => t('Week block'),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function nw_week_block_view($delta = '') {
+  $block = array();
+  if($delta != 'nw_week_block') {
+    return;
+  }
+
+  $result = nw_week_data_init();
+  $data = $result['first_page'];
+  $total_page = $result['total'];
+
+  $markup = (empty($data)) ? 'No data display' : theme('nw_week', array('data' => $data));
+  $block['content'] = theme('nw_week_general', array('data' => $markup, 'page' => 0, 'total_page' => $total_page));;
+
+  $module_path = drupal_get_path('module', 'nw_week');
+  drupal_add_css($module_path . '/css/nw_week.css');
+  drupal_add_js($module_path . '/js/nw_week.js', array('scope'=>'footer'));
+
+  return $block;
+}
+
+/**
+ * Init data
+ * @return mixed|null
+ */
+function nw_week_data_init() {
+  $result = module_invoke(variable_get('nw_week_module_hook', 'nw_week_test'), 'week_data');
+
+  if(empty($result)) {
+    return NULL;
+  }
+
+  usort($result, function($item_1, $item_2)
+  {
+    return $item_1->date > $item_2->date;
+  });
+
+  $min_date = $result[0]->date;
+  $day_in_week = date('w', $min_date);
+  $week_start_date = ($day_in_week == 0) ? $min_date : strtotime('- '. $day_in_week .' day', $min_date);
+
+  $max_date = end($result);
+  $max_date = $max_date->date;
+
+  $day_in_week = date('w', $max_date);
+  $distance_last_day = 6 - $day_in_week;
+  $week_end_date = ($day_in_week == 6) ? $max_date : strtotime('+ '. $distance_last_day .' day', $max_date);
+
+  $index = 0;
+  $weeks = array();
+
+  while($week_start_date <= $week_end_date) {
+    $format_date = date('Y-m-d', $week_start_date);
+    $format_date_list = array();
+
+    foreach($result as $item) {
+      $format_date_item = date('Y-m-d', $item->date);
+
+      if($format_date === $format_date_item) {
+        $format_date_list[] = $item;
+      }
+    }
+
+    $week[$format_date] = $format_date_list;
+
+    if($index == 6) {
+      $weeks[] = $week;
+      $week_start_date = strtotime('+1 day', $week_start_date);
+
+      $week = array();
+      $index = 0;
+      continue;
+    }
+
+    $index++;
+    $week_start_date = strtotime('+1 day', $week_start_date);
+  }
+
+  cache_set(NW_WEEK_DATA_CACHE, $weeks);
+
+  return array('first_page' => reset($weeks), 'total' => count($weeks));
+}
+
+
+
+
+
+
+
+
